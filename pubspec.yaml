@@ -1,0 +1,28 @@
+name: stego_vault
+description: Exif Cleaner & Stego Vault — offline EXIF scrubbing and AES-256-GCM LSB steganography.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Pure-Dart image codec: decode/encode PNG + JPEG, LSB plane access.
+  image: ^4.2.0
+  # AES-256-GCM + PBKDF2-HMAC-SHA256
+  pointycastle: ^3.9.1
+  # File picking / saving (no network, no cloud)
+  file_picker: ^8.1.2
+  path_provider: ^2.1.4
+  share_plus: ^10.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exif Cleaner &amp; Stego Vault — منظف البصمات الرقمية</title>
+<meta name="description" content="Offline EXIF scrubbing and AES-256-GCM LSB steganography vault. Browser preview of the Flutter Android app.">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 5v9c0 7-5 12-12 14C9 28 4 23 4 16V7z' fill='%2314B8A6'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow glow-teal" aria-hidden="true"></div>
+<div class="bg-glow glow-amber" aria-hidden="true"></div>
+
+<div class="app">
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="34" height="34">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2DD4BF"/><stop offset="1" stop-color="#0F766E"/>
+            </linearGradient>
+          </defs>
+          <path d="M24 3l17 7v13c0 10.5-7.2 18.4-17 21C14.2 41.4 7 33.5 7 23V10z" fill="url(#g1)" opacity=".96"/>
+          <path d="M24 3l17 7v13c0 10.5-7.2 18.4-17 21C14.2 41.4 7 33.5 7 23V10z" fill="none" stroke="#5EEAD4" stroke-width="1.2" opacity=".8"/>
+          <path d="M17 24l5 5 9-11" fill="none" stroke="#04121a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Exif Cleaner<span>&amp;</span> Stego Vault</h1>
+        <p lang="ar" dir="rtl">منظف البصمات الرقمية والتشفير المخفي</p>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="Modules">
+      <button class="tab is-active" data-tab="exif" role="tab" aria-selected="true">
+        <span class="tab-index">01</span>
+        <span class="tab-body">
+          <span class="tab-title">Exif Scrub &amp; Share</span>
+          <span class="tab-sub">Strip GPS · XMP · serials</span>
+        </span>
+        <span class="tab-dot" aria-hidden="true"></span>
+      </button>
+      <button class="tab" data-tab="encode" role="tab" aria-selected="false">
+        <span class="tab-index">02</span>
+        <span class="tab-body">
+          <span class="tab-title">Stego Encoder</span>
+          <span class="tab-sub">Hide payload in LSB</span>
+        </span>
+        <span class="tab-dot" aria-hidden="true"></span>
+      </button>
+      <button class="tab" data-tab="decode" role="tab" aria-selected="false">
+        <span class="tab-index">03</span>
+        <span class="tab-body">
+          <span class="tab-title">Stego Decoder</span>
+          <span class="tab-sub">Reveal · verify · export</span>
+        </span>
+        <span class="tab-dot" aria-hidden="true"></span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <label class="switch">
+        <input type="checkbox" id="mockToggle">
+        <span class="track"><span class="knob"></span></span>
+        <span class="switch-label">Mock Data Mode
+          <small>Generate synthetic photos &amp; EXIF</small>
+        </span>
+      </label>
+      <div class="offline-card">
+        <div class="offline-dot"></div>
+        <div>
+          <strong>Air-gapped</strong>
+          <small>Zero network calls · no INTERNET permission</small>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================== MAIN ============================== -->
+  <main class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <span class="crumb-index" id="crumbIndex">01</span>
+        <h2 id="crumbTitle">Exif Scrub &amp; Share</h2>
+      </div>
+      <div class="pills">
+        <span class="pill teal">AES-256-GCM</span>
+        <span class="pill">PBKDF2 · 100 000</span>
+        <span class="pill amber" id="enginePill">ON-DEVICE</span>
+      </div>
+    </header>
+
+    <!-- ------------------------------------------------------------- EXIF -->
+    <section class="panel is-active" id="panel-exif">
+      <div class="grid grid-exif">
+        <div class="col">
+          <div class="glass dropzone" id="exifDrop">
+            <input type="file" id="exifInput" accept="image/*" multiple hidden>
+            <svg class="dz-icon" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="dz-text">
+              <strong>Drop images to audit</strong>
+              <span>JPEG · PNG · BMP · WebP — batch supported</span>
+            </div>
+            <div class="dz-actions">
+              <button class="btn ghost sm" id="exifBrowse">Select files</button>
+              <button class="btn ghost sm" id="exifMock">Mock photo</button>
+            </div>
+            <span class="dz-sweep" aria-hidden="true"></span>
+          </div>
+
+          <div class="thumbs" id="exifThumbs" aria-live="polite"></div>
+
+          <div class="glass map-card">
+            <div class="card-head">
+              <h3>GPS Metadata</h3>
+              <span class="chip amber" id="gpsStatus">no fix</span>
+            </div>
+            <div class="map-wrap">
+              <canvas id="gpsCanvas" width="720" height="380"></canvas>
+              <div class="map-overlay">
+                <span class="map-tag">offline canvas map</span>
+              </div>
+            </div>
+            <div class="map-foot">
+              <code id="gpsCoords">—</code>
+              <button class="btn quiet xs" id="gpsCopy">copy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="glass compare-card">
+            <div class="card-head">
+              <h3>Before vs After</h3>
+              <div class="stat-chips" id="exifStats">
+                <span class="chip">— tags</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="meta-table">
+                <thead>
+                  <tr><th>Field</th><th>Before</th><th>After</th></tr>
+                </thead>
+                <tbody id="metaTableBody">
+                  <tr class="empty-row"><td colspan="3">Drop an image to inspect its fingerprint.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-foot">
+              <div class="file-meta" id="exifFileMeta">—</div>
+              <div class="row-actions">
+                <button class="btn quiet sm" id="btnBatch">Batch scrub all</button>
+                <button class="btn ghost sm" id="btnDownloadClean" disabled>Export cleaned</button>
+                <button class="btn primary sm" id="btnScrub" disabled>Scrub &amp; strip all meta</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass" id="scrubReport" hidden>
+            <div class="card-head">
+              <h3>Scrub report</h3>
+              <span class="chip teal" id="scrubVerdict">clean</span>
+            </div>
+            <ul class="report-list" id="scrubReportList"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------- ENCODE -->
+    <section class="panel" id="panel-encode">
+      <div class="grid grid-encode">
+        <div class="col">
+          <div class="glass dropzone compact" id="coverDrop">
+            <input type="file" id="coverInput" accept="image/*" hidden>
+            <svg class="dz-icon" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="9" cy="10" r="1.8" fill="currentColor"/>
+              <path d="M4 18l5-5 4 4 3-3 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div class="dz-text">
+              <strong>Cover image</strong>
+              <span>Lossless PNG output · RGB LSB plane</span>
+            </div>
+            <div class="dz-actions">
+              <button class="btn ghost sm" id="coverBrowse">Choose</button>
+              <button class="btn ghost sm" id="coverMock">Mock scene</button>
+            </div>
+          </div>
+
+          <div class="glass preview-card">
+            <div class="card-head">
+              <h3>Container preview</h3>
+              <span class="chip" id="coverDims">no cover</span>
+            </div>
+            <div class="preview-frame">
+              <canvas id="coverCanvas" width="640" height="420"></canvas>
+              <div class="preview-empty" id="coverEmpty">No cover image selected</div>
+            </div>
+          </div>
+
+          <div class="glass capacity-card">
+            <div class="card-head">
+              <h3>Capacity calculator</h3>
+              <span class="chip teal" id="capacityChip">—</span>
+            </div>
+            <div class="cap-bar"><div class="cap-bar-fill" id="capBarFill" style="width:0%"></div></div>
+            <div class="cap-rows">
+              <div class="cap-row"><span>Max hidden payload</span><b id="capMax">—</b></div>
+              <div class="cap-row"><span>Payload + header + tag</span><b id="capUsed">0 B</b></div>
+              <div class="cap-row"><span>Free headroom</span><b id="capFree">—</b></div>
+              <div class="cap-row"><span>Estimated PSNR</span><b id="capPsnr">—</b></div>
+            </div>
+            <label class="switch inline">
+              <input type="checkbox" id="depthToggle">
+              <span class="track"><span class="knob"></span></span>
+              <span class="switch-label">2-bit LSB mode
+                <small>Doubles capacity, still visually lossless</small>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="glass payload-card">
+            <div class="card-head">
+              <h3>Secret payload</h3>
+              <div class="segmented" id="payloadKind">
+                <button class="is-active" data-kind="text">Text</button>
+                <button data-kind="file">File</button>
+              </div>
+            </div>
+
+            <div id="textPayloadWrap">
+              <textarea id="payloadText" rows="7" placeholder="Type the message to hide…"></textarea>
+              <div class="field-foot"><span id="textBytes">0 B</span><span class="hint">UTF-8</span></div>
+            </div>
+
+            <div id="filePayloadWrap" hidden>
+              <input type="file" id="payloadFile" hidden>
+              <button class="btn ghost sm" id="payloadFileBtn">Attach file…</button>
+              <div class="file-chip" id="fileChip" hidden>
+                <span class="file-name" id="fileName">—</span>
+                <span class="file-size" id="fileSize">—</span>
+              </div>
+            </div>
+
+            <div class="pw-field">
+              <input type="password" id="encodePassword" placeholder="Passphrase" autocomplete="new-password" spellcheck="false">
+              <button class="btn quiet xs" id="toggleEncodePw" type="button">show</button>
+            </div>
+            <div class="strength"><span id="strengthBar"></span></div>
+            <div class="field-foot"><span id="strengthNote">min. 8 characters recommended</span><span class="hint">PBKDF2-SHA256</span></div>
+
+            <button class="btn primary block" id="btnEmbed" disabled>Encrypt &amp; hide in PNG</button>
+            <p class="fineprint">Payload is encrypted before a single bit touches the image. Without the passphrase the ciphertext is indistinguishable from noise.</p>
+          </div>
+
+          <div class="glass result-card" id="embedResult" hidden>
+            <div class="card-head">
+              <h3>Container ready</h3>
+              <span class="chip teal" id="embedBadge">SGV1</span>
+            </div>
+            <div class="compare-slider" id="compareSlider">
+              <img id="coverImg" alt="Original cover">
+              <img id="stegoImg" class="stego-layer" alt="Stego container">
+              <div class="divider" id="divider"><span class="divider-grip"></span></div>
+              <span class="slider-label left">cover</span>
+              <span class="slider-label right">stego</span>
+            </div>
+            <div class="hud">
+              <div><span>PSNR</span><b id="hudPsnr">—</b></div>
+              <div><span>max Δ</span><b id="hudDelta">—</b></div>
+              <div><span>changed ch.</span><b id="hudChanged">—</b></div>
+              <div><span>embed time</span><b id="hudTime">—</b></div>
+            </div>
+            <div class="row-actions">
+              <button class="btn ghost sm" id="btnSendToDecoder">Test in decoder</button>
+              <button class="btn primary sm" id="btnDownloadStego">Download PNG</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------- DECODE -->
+    <section class="panel" id="panel-decode">
+      <div class="grid grid-decode">
+        <div class="col">
+          <div class="glass dropzone compact" id="decodeDrop">
+            <input type="file" id="decodeInput" accept="image/*" hidden>
+            <svg class="dz-icon" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+              <path d="M12 3l9 5v8l-9 5-9-5V8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="2.6" fill="currentColor"/>
+            </svg>
+            <div class="dz-text">
+              <strong>Stego container</strong>
+              <span>PNG with an SGV1 LSB payload</span>
+            </div>
+            <div class="dz-actions">
+              <button class="btn ghost sm" id="decodeBrowse">Choose</button>
+              <button class="btn ghost sm" id="decodeMock">Mock container</button>
+            </div>
+          </div>
+
+          <div class="glass preview-card">
+            <div class="card-head">
+              <h3>Scan</h3>
+              <span class="chip" id="detectBadge">awaiting image</span>
+            </div>
+            <div class="preview-frame">
+              <canvas id="decodeCanvas" width="640" height="420"></canvas>
+              <div class="preview-empty" id="decodeEmpty">No container loaded</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="glass reveal-card">
+            <div class="card-head">
+              <h3>Reveal payload</h3>
+              <span class="chip amber" id="authChip">unverified</span>
+            </div>
+            <div class="pw-field">
+              <input type="password" id="decodePassword" placeholder="Passphrase" autocomplete="off" spellcheck="false">
+              <button class="btn quiet xs" id="toggleDecodePw" type="button">show</button>
+            </div>
+            <button class="btn primary block" id="btnReveal" disabled>Decrypt &amp; verify</button>
+            <div class="diag-grid" id="decodeDiag">
+              <div><span>magic</span><b>—</b></div>
+              <div><span>version</span><b>—</b></div>
+              <div><span>mode</span><b>—</b></div>
+              <div><span>ciphertext</span><b>—</b></div>
+              <div><span>tag</span><b>—</b></div>
+              <div><span>elapsed</span><b>—</b></div>
+            </div>
+          </div>
+
+          <div class="glass payload-out" id="decodeOutput" hidden>
+            <div class="card-head">
+              <h3>Revealed payload</h3>
+              <span class="chip teal" id="outKind">text</span>
+            </div>
+            <pre id="outText"></pre>
+            <div class="row-actions">
+              <button class="btn quiet sm" id="btnCopyOut">Copy</button>
+              <button class="btn ghost sm" id="btnDownloadOut">Download</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="statusbar">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="statusText">Engine idle — no image loaded</span>
+      <span class="status-right" id="statusRight">ARM64 · offline build</span>
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/crypto-core.js"></script>
+<script src="js/png.js"></script>
+<script src="js/jpeg-meta.js"></script>
+<script src="js/mock.js"></script>
+<script src="js/stego-engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

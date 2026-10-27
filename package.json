@@ -1,0 +1,15 @@
+{
+  "name": "stego-vault-engine-tests",
+  "private": true,
+  "type": "module",
+  "description": "Test harness for the browser build of Exif Cleaner & Stego Vault (the Flutter app has its own flutter_test suite).",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "test:engine": "node --test test/preview_engine.test.mjs",
+    "test:ui": "node --test test/ui_smoke.test.mjs",
+    "preview": "python3 -m http.server 8080 --directory preview"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
+}

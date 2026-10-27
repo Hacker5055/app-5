@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG ONLY. The Dart VM service and hot reload need a socket, so Flutter
+  injects android.permission.INTERNET in debug/profile builds. The release
+  manifest contains no network permission whatsoever — verify the shipped
+  artefact with:
+      aapt2 dump permissions app-release.apk | grep -i internet   # no output
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
